@@ -73,6 +73,7 @@
 #include "util/log.h"
 #include "util/config_file.h"
 #include "util/data/msgreply.h"
+#include "util/shm_side/shm_main.h"
 #include "util/storage/lookup3.h"
 #include "util/storage/slabhash.h"
 #include "services/listen_dnsport.h"
@@ -605,19 +606,22 @@ daemon_fork(struct daemon* daemon)
 #endif
 	signal_handling_playback(daemon->workers[0]);
 
+	if (!shm_main_init(daemon))
+		log_warn("SHM has failed");
+
 	/* Start resolver service on main thread. */
 #ifdef HAVE_SYSTEMD
 	sd_notify(0, "READY=1");
 #endif
 	log_info("start of service (%s).", PACKAGE_STRING);
 	worker_work(daemon->workers[0]);
-#ifdef HAVE_SYSTEMD
-	sd_notify(0, "STOPPING=1");
-#endif
 	log_info("service stopped (%s).", PACKAGE_STRING);
 
 	/* we exited! a signal happened! Stop other threads */
 	daemon_stop_others(daemon);
+
+	/* Shutdown SHM */
+	shm_main_shutdown(daemon);
 
 	daemon->need_to_exit = daemon->workers[0]->need_to_exit;
 }

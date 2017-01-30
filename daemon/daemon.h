@@ -118,6 +118,7 @@ struct daemon {
 	/** the dnstap environment master value, copied and changed by threads*/
 	struct dt_env* dtenv;
 #endif
+	struct shm_main_info* shm_info;
 };
 
 /**

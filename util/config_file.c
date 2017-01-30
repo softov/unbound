@@ -257,6 +257,8 @@ config_create(void)
 	cfg->ratelimit_factor = 10;
 	cfg->qname_minimisation = 0;
 	cfg->qname_minimisation_strict = 0;
+	cfg->shm_enable 	= 1;
+	cfg->shm_key 		= 11777;
 	return cfg;
 error_exit:
 	config_delete(cfg); 
